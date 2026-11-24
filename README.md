@@ -18,25 +18,10 @@ GROQ_API_KEY=gsk_your_groq_api_key_here
 ```
 
 ### 3. Run the Application
-
-#### Option A: Quick Run (Single Command)
 ```bash
 python server.py
 ```
 👉 Open browser: **`http://127.0.0.1:8000`**
-
-
-#### Option B: Vite React Dev Server (`npm run dev`)
-1. **Terminal 1 (Backend):**
-   ```bash
-   python server.py
-   ```
-2. **Terminal 2 (Frontend):**
-   ```bash
-   cd frontend
-   npm run dev
-   ```
-👉 Open browser: **`http://localhost:5173`**
 
 ---
 

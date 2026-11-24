@@ -195,15 +195,21 @@ export default function App() {
         
         {/* Hero Section */}
         {!sessionData && (
-          <div className="text-center max-w-3xl mx-auto mb-8 animate-fadeIn">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-950/40 border border-red-800/40 text-red-400 text-xs font-semibold mb-4">
-              <Zap className="w-3.5 h-3.5" /> Powered by Groq API + Hugging Face Embeddings
+          <div className="text-center max-w-3xl mx-auto mb-8">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-950/40 border border-red-800/40 text-red-400 text-xs font-semibold mb-3">
+              <Sparkles className="w-3.5 h-3.5 text-amber-300" /> YouTube AI Intelligent Agent
             </div>
-            <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white mb-4 leading-tight">
-              Understand Any YouTube Video & <span className="gradient-text">Test Your Learning</span>
+            <h1 className="text-3xl sm:text-5xl font-extrabold text-white mb-3">
+              {appLanguage === 'en' ? (
+                <>Understand Any Video & <span className="gradient-text">Test Your Learning</span></>
+              ) : (
+                <>वीडियो में क्या पढ़ाया है समझें & <span className="gradient-text">सीख की जाँच करें</span></>
+              )}
             </h1>
-            <p className="text-sm sm:text-base text-slate-400 max-w-2xl mx-auto">
-              YouTube का कोई भी वीडियो URL डालें — Agent वीडियो का सम्पूर्ण विश्लेषण (Content & What was taught) करेगा, आपसे सीख की जाँच के लिए प्रश्न पूछेगा, और किसी भी प्रश्न का सटीक उत्तर देगा!
+            <p className="text-sm text-slate-400">
+              {appLanguage === 'en'
+                ? 'Paste any YouTube URL — The Agent breaks down what was taught, quizzes you on core concepts, and answers any question!'
+                : 'किसी भी YouTube वीडियो का URL दें — Agent बताएगा कि क्या पढ़ाया गया है, आपसे प्रश्न पूछेगा, और आपके हर सवाल का सटीक जवाब देगा!'}
             </p>
           </div>
         )}
@@ -329,53 +335,9 @@ export default function App() {
             </div>
 
           </div>
-        ) : (
-          /* Empty State Feature Cards */
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-5xl mx-auto mt-8">
-            <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition">
-              <div className="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 flex items-center justify-center mb-4">
-                <BrainCircuit className="w-5 h-5" />
-              </div>
-              <h3 className="font-bold text-white text-base mb-1">
-                Content & What Was Taught
-              </h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                वीडियो में कौन सी बात चल रही है, क्या टॉपिक्स और कॉन्सेप्ट्स पढ़ाए गए हैं, उसका सम्पूर्ण संरचित विश्लेषण।
-              </p>
-            </div>
-
-            <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition">
-              <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center mb-4">
-                <HelpCircle className="w-5 h-5" />
-              </div>
-              <h3 className="font-bold text-white text-base mb-1">
-                Agent Quiz & Evaluation
-              </h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Agent वीडियो के कंटेंट के आधार पर आपसे इंटरेक्टिव प्रश्न पूछेगा और हर उत्तर का कारण स्पष्ट करेगा।
-              </p>
-            </div>
-
-            <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mb-4">
-                <Zap className="w-5 h-5" />
-              </div>
-              <h3 className="font-bold text-white text-base mb-1">
-                Groq + Hugging Face RAG
-              </h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Groq LLM की अल्ट्रा-फास्ट स्पीड और Hugging Face Local Embeddings + FAISS की मदद से किसी भी सवाल का सटीक उत्तर पाएँ।
-              </p>
-            </div>
-          </div>
         )}
 
       </main>
-
-      {/* Footer */}
-      <footer className="border-t border-slate-800/80 py-4 text-center text-xs text-slate-500">
-        YouTube AI Agent • Built with React, FastAPI, Groq LLM & Hugging Face Embeddings
-      </footer>
 
     </div>
   );
