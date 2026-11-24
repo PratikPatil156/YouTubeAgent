@@ -241,7 +241,7 @@ export default function App() {
         )}
 
         {/* Content Display Area */}
-        {sessionData ? (
+        {sessionData && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             
             {/* Left Column: Video Player & Meta */}
