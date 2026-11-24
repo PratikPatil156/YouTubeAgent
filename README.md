@@ -18,10 +18,18 @@ GROQ_API_KEY=gsk_your_groq_api_key_here
 ```
 
 ### 3. Run the Application
-```bash
-python server.py
-```
-👉 Open browser: **`http://127.0.0.1:8000`**
+
+1. **Start Backend (Terminal 1):**
+   ```bash
+   python server.py
+   ```
+
+2. **Start React UI (Terminal 2):**
+   ```bash
+   cd frontend
+   npm run dev
+   ```
+👉 Open browser: **`http://localhost:5173`**
 
 ---
 
@@ -50,9 +58,8 @@ python server.py
 ```
 youtubeAgent/
 ├── agent.py              # AI agent logic (Groq, RAG, FAISS, Transcripts)
-├── server.py             # FastAPI backend & static file server
-├── static/index.html     # Standalone React frontend
-├── frontend/             # Modular Vite React app
+├── server.py             # FastAPI backend REST API
+├── frontend/             # React 18 + Vite frontend
 ├── requirements.txt      # Python dependencies
 └── .env                  # Groq API key configuration
 ```

@@ -4,8 +4,7 @@ import logging
 from typing import List, Dict, Any, Optional
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
@@ -71,16 +70,12 @@ class QuizRequest(BaseModel):
 
 
 @app.get("/")
-def serve_index():
-    index_path = os.path.join(os.path.dirname(__file__), "static", "index.html")
-    if os.path.exists(index_path):
-        return FileResponse(index_path)
-    return {"message": "YouTube AI Agent API is running. Build frontend or open static/index.html."}
-
-# Mount static folder if exists
-static_dir = os.path.join(os.path.dirname(__file__), "static")
-if os.path.exists(static_dir):
-    app.mount("/static", StaticFiles(directory=static_dir), name="static")
+def root():
+    """
+    Redirects to the official React UI at http://localhost:5173
+    Port 8000 operates strictly as the FastAPI JSON backend.
+    """
+    return RedirectResponse(url="http://localhost:5173")
 
 @app.get("/api/health")
 def health_check():
