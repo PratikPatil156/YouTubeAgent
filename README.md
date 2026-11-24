@@ -4,32 +4,51 @@ An intelligent YouTube assistant that breaks down video lessons, quizzes your co
 
 ---
 
-## 🚀 Quick Start
+## 📁 Project Structure
 
-### 1. Install Dependencies
-```bash
-pip install -r requirements.txt
+```text
+youtubeAgent/
+├── backend/                  # FastAPI & AI Agent Backend
+│   ├── agent.py              # AI agent logic (Groq, RAG, FAISS, Transcripts)
+│   ├── server.py             # FastAPI REST API endpoints
+│   └── requirements.txt      # Python dependencies
+├── frontend/                 # React 18 + Vite Frontend UI
+│   ├── src/
+│   │   ├── App.jsx           # Main React component
+│   │   ├── index.css         # Tailwind & Markdown styles
+│   │   └── main.jsx          # React DOM entry point
+│   ├── package.json          # Frontend dependencies & scripts
+│   └── vite.config.js        # Vite build & API proxy configuration
+├── .env.example              # Environment variables template
+├── .gitignore                # Git exclusions
+└── README.md                 # Project documentation
 ```
 
-### 2. Set Up API Key
-Add your Groq API key in `.env` (or enter it directly in the app's Settings ⚙️):
+---
+
+## 🚀 Quick Start
+
+### 1. Backend Setup (Terminal 1)
+```bash
+cd backend
+pip install -r requirements.txt
+python server.py
+```
+Backend runs at `http://127.0.0.1:8000` (FastAPI JSON API).
+
+### 2. Frontend Setup (Terminal 2)
+```bash
+cd frontend
+npm install
+npm run dev
+```
+👉 Open browser: **`http://localhost:5173`**
+
+### 3. API Key Configuration
+Add your Groq API key in `.env` in the root folder (or enter it directly in the UI Settings ⚙️):
 ```env
 GROQ_API_KEY=gsk_your_groq_api_key_here
 ```
-
-### 3. Run the Application
-
-1. **Start Backend (Terminal 1):**
-   ```bash
-   python server.py
-   ```
-
-2. **Start React UI (Terminal 2):**
-   ```bash
-   cd frontend
-   npm run dev
-   ```
-👉 Open browser: **`http://localhost:5173`**
 
 ---
 
@@ -50,16 +69,3 @@ GROQ_API_KEY=gsk_your_groq_api_key_here
 - **Vector Search**: In-memory FAISS
 - **Backend**: FastAPI, LangChain, Uvicorn
 - **Frontend**: React 18, Tailwind CSS, Marked.js
-
----
-
-## 📁 Project Structure
-
-```
-youtubeAgent/
-├── agent.py              # AI agent logic (Groq, RAG, FAISS, Transcripts)
-├── server.py             # FastAPI backend REST API
-├── frontend/             # React 18 + Vite frontend
-├── requirements.txt      # Python dependencies
-└── .env                  # Groq API key configuration
-```

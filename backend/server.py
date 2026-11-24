@@ -1,12 +1,27 @@
 import os
+import sys
 import uuid
 import logging
+from pathlib import Path
 from typing import List, Dict, Any, Optional
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 from dotenv import load_dotenv
+
+# Ensure backend directory is on sys.path
+BASE_DIR = Path(__file__).resolve().parent
+if str(BASE_DIR) not in sys.path:
+    sys.path.insert(0, str(BASE_DIR))
+
+# Load .env from backend/ or project root
+if (BASE_DIR / ".env").exists():
+    load_dotenv(dotenv_path=BASE_DIR / ".env")
+elif (BASE_DIR.parent / ".env").exists():
+    load_dotenv(dotenv_path=BASE_DIR.parent / ".env")
+else:
+    load_dotenv()
 
 from agent import (
     extract_video_id,
@@ -17,8 +32,6 @@ from agent import (
     generate_video_quiz,
     answer_video_query,
 )
-
-load_dotenv()
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("youtube-agent")
@@ -305,4 +318,4 @@ def get_full_transcript(session_id: str):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("server:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("server:app", host="127.0.0.1", port=8000, reload=True, app_dir=str(BASE_DIR))
