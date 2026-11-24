@@ -34,9 +34,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# In-memory store for active video sessions
-# session_id -> { "video_id": str, "vector_store": FAISS, "transcript_text": str, "snippets": list }
+# In-memory store for active video sessions with bounded capacity (prevents memory leak)
 active_sessions: Dict[str, Dict[str, Any]] = {}
+MAX_ACTIVE_SESSIONS = 10
 
 
 class TestGroqRequest(BaseModel):
@@ -195,7 +195,11 @@ def process_video(req: ProcessVideoRequest):
             detail=f"Error running Groq LLM inference: {str(e)}"
         )
 
-    # Save session
+    # Save session (bounded store to prevent RAM leaks)
+    if len(active_sessions) >= MAX_ACTIVE_SESSIONS:
+        oldest_id = next(iter(active_sessions))
+        active_sessions.pop(oldest_id, None)
+
     session_id = str(uuid.uuid4())
     active_sessions[session_id] = {
         "video_id": video_id,
@@ -224,6 +228,9 @@ def chat(req: ChatRequest):
     """
     RAG Chat endpoint: Asks questions about the video content.
     """
+    if not req.query or not req.query.strip():
+        raise HTTPException(status_code=400, detail="Query cannot be empty.")
+
     session = active_sessions.get(req.session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found. Please process a video first.")

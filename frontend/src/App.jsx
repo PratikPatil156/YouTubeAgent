@@ -208,8 +208,6 @@ export default function App() {
 
   // Video state
   const [videoUrl, setVideoUrl] = useState('');
-  const [manualTranscript, setManualTranscript] = useState('');
-  const [showManual, setShowManual] = useState(false);
   const [loading, setLoading] = useState(false);
   const [regeneratingQuiz, setRegeneratingQuiz] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -256,7 +254,7 @@ export default function App() {
           url_or_id: videoUrl,
           groq_api_key: groqApiKey,
           model_name: selectedModel,
-          manual_transcript: manualTranscript,
+          manual_transcript: null,
           language: appLanguage
         })
       });

@@ -2,7 +2,6 @@ import os
 import re
 import json
 from typing import List, Dict, Any, Tuple, Optional
-from urllib.parse import urlparse, parse_qs
 
 from youtube_transcript_api import (
     YouTubeTranscriptApi,
@@ -30,7 +29,7 @@ def extract_video_id(url_or_id: str) -> str:
     """
     if not url_or_id:
         return ""
-    text = url_or_id.strip()
+    text = str(url_or_id).strip().strip('"').strip("'")
 
     # If it's already an 11-character ID
     if len(text) == 11 and re.match(r"^[a-zA-Z0-9_-]{11}$", text):
@@ -143,20 +142,26 @@ def fetch_youtube_transcript(
     return full_text, formatted_snippets, detected_lang
 
 
+_embeddings_instance = None
+
+
 def get_huggingface_embeddings():
     """
     Initializes HuggingFaceEmbeddings using sentence-transformers/all-MiniLM-L6-v2.
-    Uses cached weights locally if available to eliminate internet latency.
+    Uses a singleton instance to eliminate redundant disk/RAM reloads on each video.
     """
-    try:
-        return HuggingFaceEmbeddings(
-            model_name="sentence-transformers/all-MiniLM-L6-v2",
-            model_kwargs={"local_files_only": True}
-        )
-    except Exception:
-        return HuggingFaceEmbeddings(
-            model_name="sentence-transformers/all-MiniLM-L6-v2"
-        )
+    global _embeddings_instance
+    if _embeddings_instance is None:
+        try:
+            _embeddings_instance = HuggingFaceEmbeddings(
+                model_name="sentence-transformers/all-MiniLM-L6-v2",
+                model_kwargs={"local_files_only": True}
+            )
+        except Exception:
+            _embeddings_instance = HuggingFaceEmbeddings(
+                model_name="sentence-transformers/all-MiniLM-L6-v2"
+            )
+    return _embeddings_instance
 
 
 def build_vector_store(snippets: List[Dict[str, Any]], chunk_size: int = 800, chunk_overlap: int = 120) -> FAISS:
@@ -198,14 +203,6 @@ def build_vector_store(snippets: List[Dict[str, Any]], chunk_size: int = 800, ch
     embeddings = get_huggingface_embeddings()
     vector_store = FAISS.from_documents(split_docs, embeddings)
     return vector_store
-
-
-FALLBACK_MODELS = [
-    "llama-3.1-8b-instant",
-    "llama-3.1-70b-versatile",
-    "llama3-8b-8192",
-    "mixtral-8x7b-32768",
-]
 
 
 PREFERRED_GROQ_MODELS = [
@@ -498,15 +495,71 @@ Format:
         content = content[:-3]
     content = content.strip()
 
+    def _normalize_quiz(quiz_items: list) -> list:
+        letters = ["A", "B", "C", "D"]
+        normalized = []
+        for idx, item in enumerate(quiz_items):
+            if not isinstance(item, dict):
+                continue
+            q_text = item.get("question", f"Question {idx + 1}")
+            opts = item.get("options", [])
+            if not isinstance(opts, list) or len(opts) < 2:
+                continue
+
+            clean_opts = []
+            for o_idx, opt in enumerate(opts[:4]):
+                opt_str = str(opt).strip()
+                if not re.match(r"^[A-D]\)", opt_str, re.IGNORECASE):
+                    prefix = f"{letters[o_idx]}) "
+                    opt_str = f"{prefix}{opt_str}"
+                clean_opts.append(opt_str)
+
+            raw_ans = str(item.get("correct_answer", "")).strip()
+            matched_ans = clean_opts[0]
+            m = re.match(r"^([A-D])", raw_ans, re.IGNORECASE)
+            if m:
+                letter = m.group(1).upper()
+                for opt in clean_opts:
+                    if opt.upper().startswith(f"{letter})"):
+                        matched_ans = opt
+                        break
+            else:
+                for opt in clean_opts:
+                    opt_content = opt[3:].strip().lower()
+                    if raw_ans.lower() in opt_content or opt_content in raw_ans.lower():
+                        matched_ans = opt
+                        break
+
+            normalized.append({
+                "id": item.get("id", idx + 1),
+                "question": q_text,
+                "options": clean_opts,
+                "correct_answer": matched_ans,
+                "explanation": item.get("explanation", "Based on the content taught in the video.")
+            })
+        return normalized
+
     try:
         data = json.loads(content)
         if isinstance(data, list):
-            return data
+            norm = _normalize_quiz(data)
+            if norm:
+                return norm
+        elif isinstance(data, dict):
+            for k in ["quiz", "questions", "data"]:
+                if k in data and isinstance(data[k], list):
+                    norm = _normalize_quiz(data[k])
+                    if norm:
+                        return norm
     except Exception:
         match = re.search(r"\[\s*\{.*\}\s*\]", content, re.DOTALL)
         if match:
             try:
-                return json.loads(match.group(0))
+                raw_list = json.loads(match.group(0))
+                if isinstance(raw_list, list):
+                    norm = _normalize_quiz(raw_list)
+                    if norm:
+                        return norm
             except Exception:
                 pass
 
@@ -625,7 +678,16 @@ Helpful Answer:
     clean_answer = clean_promotional_fluff(clean_answer)
 
     # If topic is not in the video, omit citations so no misleading timestamps appear
-    final_citations = [] if is_not_found else citations
+    if is_not_found:
+        final_citations = []
+    else:
+        seen_ts = set()
+        final_citations = []
+        for c in citations:
+            ts = c.get("timestamp")
+            if ts and ts not in seen_ts:
+                seen_ts.add(ts)
+                final_citations.append(c)
 
     return {
         "answer": clean_answer,
